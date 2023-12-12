@@ -2,7 +2,6 @@ import util.Util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class Day12 {
@@ -10,7 +9,7 @@ public class Day12 {
     public static void main(String[] args) {
         Util.verifySubmission();
         var inputs = Util.readStrings();
-        //Util.submitPart1(part1(inputs));
+        Util.submitPart1(part1(inputs));
         Util.submitPart2(part2(inputs));
     }
 
@@ -25,18 +24,16 @@ public class Day12 {
             for (int i = 0; i < 5; ++i) {
                 newValues.addAll(values);
             }
-            var newString = split[0];
+            var sb = new StringBuilder(split[0]);
             for (int i = 0; i < 4; ++i) {
-                newString += "?" + split[0];
+                sb.append("?").append(split[0]);
             }
+            var newString = sb.toString();
             long[][] dp = new long[newString.length()][newValues.size()];
             for (int i = 0; i < dp.length; ++i) {
-                for (int j = 0; j < dp[i].length; ++j) {
-                    dp[i][j] = -1;
-                }
+                Arrays.fill(dp[i], -1);
             }
             long ans = calc(dp, newString, newValues, 0, 0);
-            System.out.println(input + ": " + ans);
             sum += ans;
         }
         return sum;
