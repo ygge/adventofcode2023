@@ -7,7 +7,6 @@ import java.util.List;
 public class Day12 {
 
     public static void main(String[] args) {
-        Util.verifySubmission();
         var inputs = Util.readStrings();
         Util.submitPart1(part1(inputs));
         Util.submitPart2(part2(inputs));
