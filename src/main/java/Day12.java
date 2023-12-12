@@ -1,96 +1,101 @@
 import util.Util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Day12 {
 
     public static void main(String[] args) {
         Util.verifySubmission();
-        //var inputs = Util.readStrings();
-        /*
-        var inputs = Util.toStringList("???.### 1,1,3\n" +
-                ".??..??...?##. 1,1,3\n" +
-                "?#?#?#?#?#?#?#? 1,3,1,6\n" +
-                "????.#...#... 4,1,1\n" +
-                "????.######..#####. 1,6,5\n" +
-                "?###???????? 3,2,1");
-         */
-        var inputs = Collections.singletonList("?###???????? 3,2,1");
-        Util.submitPart1(part1(inputs));
+        var inputs = Util.readStrings();
+        //Util.submitPart1(part1(inputs));
+        Util.submitPart2(part2(inputs));
     }
 
-    private static long part1(List<String> inputs) {
+    private static long part2(List<String> inputs) {
         long sum = 0;
         for (String input : inputs) {
             var split = input.split(" ");
-            var list = Arrays.stream(split[0].split("\\."))
-                    .filter(s -> !s.isEmpty())
-                    .toList();
             var values = Arrays.stream(split[1].split(","))
                     .map(Integer::parseInt)
-                    .collect(Collectors.toList());
-            long ans = calc(list, values, 0, 0);
+                    .toList();
+            List<Integer> newValues = new ArrayList<>();
+            for (int i = 0; i < 5; ++i) {
+                newValues.addAll(values);
+            }
+            var newString = split[0];
+            for (int i = 0; i < 4; ++i) {
+                newString += "?" + split[0];
+            }
+            long[][] dp = new long[newString.length()][newValues.size()];
+            for (int i = 0; i < dp.length; ++i) {
+                for (int j = 0; j < dp[i].length; ++j) {
+                    dp[i][j] = -1;
+                }
+            }
+            long ans = calc(dp, newString, newValues, 0, 0);
             System.out.println(input + ": " + ans);
             sum += ans;
         }
         return sum;
     }
 
-    private static long calc(List<String> list, List<Integer> values, int index1, int index2) {
-        if (index1 == list.size() && index2 == values.size()) {
+    private static long part1(List<String> inputs) {
+        long sum = 0;
+        for (String input : inputs) {
+            var split = input.split(" ");
+            var values = Arrays.stream(split[1].split(","))
+                    .map(Integer::parseInt)
+                    .toList();
+            long[][] dp = new long[split[0].length()][values.size()];
+            for (int i = 0; i < dp.length; ++i) {
+                for (int j = 0; j < dp[i].length; ++j) {
+                    dp[i][j] = -1;
+                }
+            }
+            long ans = calc(dp, split[0], values, 0, 0);
+            System.out.println(input + ": " + ans);
+            sum += ans;
+        }
+        return sum;
+    }
+
+    private static long calc(long[][] dp, String pattern, List<Integer> values, int index1, int index2) {
+        if (index1 >= pattern.length() && index2 == values.size()) {
             return 1;
         }
-        if (index1 == list.size()) {
+        if (index1 >= pattern.length()) {
             return 0;
         }
         if (index2 == values.size()) {
-            return list.subList(index1, list.size()).stream().anyMatch(s -> s.contains("#")) ? 0 : 1;
+            return pattern.substring(index1).contains("#") ? 0 : 1;
         }
-        long v = calc(list, values, index1 + 1, index2);
-        String pattern = list.get(index1);
-        if (!pattern.contains("?")) {
-            if (pattern.length() == values.get(index2)) {
-                return v + calc(list, values, index1 + 1, index2 + 1);
+        if (dp[index1][index2] == -1) {
+            if (index1 + values.get(index2) > pattern.length()) {
+                dp[index1][index2] = 0;
+            } else {
+                boolean ok = true;
+                for (int i = 0; i < values.get(index2); ++i) {
+                    if (pattern.charAt(index1 + i) == '.') {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok && pattern.length() > index1 + values.get(index2)) {
+                    ok = pattern.charAt(index1 + values.get(index2)) != '#';
+                }
+                long sum = 0;
+                if (ok) {
+                    sum = calc(dp, pattern, values, index1 + values.get(index2) + 1, index2 + 1);
+                }
+                if (pattern.charAt(index1) != '#') {
+                    sum += calc(dp, pattern, values, index1 + 1, index2);
+                }
+                dp[index1][index2] = sum;
             }
-            return v;
         }
-        if (pattern.length() < values.get(index2)) {
-            return pattern.contains("#") ? 0 : v;
-        }
-        if (pattern.length() == values.get(index2)) {
-            return v + calc(list, values, index1 + 1, index2 +1);
-        }
-        return v + calc(list, values, index1, index2, pattern);
-    }
-
-    private static long calc(List<String> list, List<Integer> values, int index1, int index2, String pattern) {
-        if (pattern.isEmpty()) {
-            return calc(list, values, index1 + 1, index2);
-        }
-        if (index2 == values.size()) {
-            return pattern.contains("#") ? 0 : calc(list, values, index1, index2);
-        }
-        int nextLen = values.get(index2);
-        if (pattern.length() < nextLen) {
-            return calc(list, values, index1, index2);
-        }
-        if (pattern.length() == nextLen) {
-            return calc(list, values, index1 + 1, index2 + 1);
-        }
-        if (pattern.startsWith("#")) {
-            if (pattern.charAt(nextLen) != '?') {
-                return 0;
-            }
-            return calc(list, values, index1, index2 + 1, pattern.substring(nextLen + 1));
-        }
-
-        long startNow = pattern.charAt(nextLen) == '?'
-                ? calc(list, values, index1, index2 + 1, pattern.substring(nextLen + 1))
-                : 0;
-        long startNext = calc(list, values, index1, index2, pattern.substring(1));
-        return startNow + startNext;
+        return dp[index1][index2];
     }
 }
