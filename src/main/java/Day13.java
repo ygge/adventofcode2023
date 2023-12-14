@@ -6,7 +6,7 @@ public class Day13 {
 
     public static void main(String[] args) {
         var inputs = Util.readStrings();
-        //Util.submitPart1(part1(inputs));
+        Util.submitPart1(part1(inputs));
         Util.submitPart2(part2(inputs));
     }
 
