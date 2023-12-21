@@ -5,9 +5,8 @@ import java.util.*;
 public class Day20 {
 
     public static void main(String[] args) {
-        Util.verifySubmission();
         var input = Util.readStrings();
-        //Util.submitPart1(part1(input));
+        Util.submitPart1(part1(input));
         Util.submitPart2(part2(input));
     }
 
